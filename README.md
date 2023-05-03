@@ -1,3 +1,4 @@
+[![Testing](https://github.com/JensvandeWiel/rm2/actions/workflows/scala.yml/badge.svg)](https://github.com/JensvandeWiel/rm2/actions/workflows/scala.yml)
 # RM2
 
 This is a project for leaning the scala language.
