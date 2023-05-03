@@ -8,20 +8,24 @@ object Delete {
   /**
    * The string that is printed when user uses --help or -h argument.
    * */
-  private val helpString = ""
+  private val helpString = "placeholder"
 
-  def handle(c: Config): Unit = {
+  def handle(c: Config): Boolean = {
     if (c.isHelp) {
       println(helpString)
-      return
+      true
     }
 
     val results = delete(c)
     val failed = results.filter(_._2 == false).keys.toArray
-    println(results.mkString)
-    if (!results.values.forall(_ == true) && !c.isDry) {
 
-      throw new RuntimeException(failed.mkString("Unable to delete the following: \n", "\n", "\n"))
+
+    if (results.values.forall(_ == true)) {
+      true
+    } else if (c.isDry) {
+      true
+    } else {
+      false
     }
   }
 
@@ -82,6 +86,10 @@ object Delete {
   private def deleteForcefully(f: File, dry: Boolean): Boolean = {
     // Force delete is actually just deleting recursively
     //TODO deleteForcefully should ignore nonexistent files/directories
+
+    if (!f.exists()) return true
+
+
     if (f.isDirectory) {
       f.listFiles.foreach(deleteForcefully(_, dry))
     }

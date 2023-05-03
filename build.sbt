@@ -9,3 +9,5 @@ lazy val root = (project in file("."))
   )
 
 mainClass := Some("eu.alpacaislands.rm2.Main")
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.11" % Test
