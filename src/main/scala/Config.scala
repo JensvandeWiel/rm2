@@ -2,9 +2,13 @@ package eu.alpacaislands.rm2
 
 
 /**
- * Handles the config of the deletion, It parses the arguments passed to the application and it has boolean values if certain arguments are present */
+ * Handles the config of the deletion, It parses the arguments passed to the application and it has boolean values if certain arguments are present
+ * */
 class Config(args: Array[String]) {
-
+  /**
+   * Contains all arguments
+   * */
+  private val arguments: Array[String] = parseArgs(args)._2
   /**
    * Contains all paths that are to be deleted.
    */
@@ -20,9 +24,8 @@ class Config(args: Array[String]) {
   /**
    * Describes if user prompted fot the help command
    * */
-  val isHelp: Boolean = arguments.contains("help") || arguments.contains("h")
-
   //TODO Add help functionality
+  val isHelp: Boolean = arguments.contains("help") || arguments.contains("h")
   /**
    * Describes if it should delete or run without deleting (if found it will run without deleting).
    * */
@@ -36,9 +39,6 @@ class Config(args: Array[String]) {
     }
     !arguments.contains("prompt") || !arguments.contains("p")
   }
-  //TODO implement
-  private val arguments: Array[String] = parseArgs(args)._2
-
   /**
    *
    * @param args the arguments passed to sort
