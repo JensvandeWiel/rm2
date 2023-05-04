@@ -43,8 +43,13 @@ class Config(args: Array[String]) {
     if (isForce) {
       false
     }
-    arguments.contains("prompt") || arguments.contains("p")
+    !(arguments.contains("prompt") || arguments.contains("p"))
   }
+
+  /**
+   * Describes if should not check for right machine
+   * */
+  val shouldCheckMachine: Boolean = !arguments.contains("c")
 
 
   //Todo make app verbose and add option to run quiet

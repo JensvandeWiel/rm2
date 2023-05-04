@@ -17,14 +17,14 @@ class rm2Test extends AnyFunSuite {
     // Create file
     val tmp = Files.createTempFile("temp", ".tmp")
     //Run actual test
-    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString))))
+    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString, "-c", "-p"))))
   }
 
   test("cantDeleteNonexistentFile") {
 
     //catch exception
     val e = intercept[RuntimeException] {
-      Delete.handle(new Config(Array("foo.bar")))
+      Delete.handle(new Config(Array("foo.bar", "-c", "-p")))
     }
 
     assert(e.getMessage.contains("does not exist"))
@@ -36,7 +36,7 @@ class rm2Test extends AnyFunSuite {
 
     //catch exception
     val e = intercept[RuntimeException] {
-      Delete.handle(new Config(Array(tmp.toRealPath().toString)))
+      Delete.handle(new Config(Array(tmp.toRealPath().toString, "-c", "-p")))
     }
 
     //clean up
@@ -55,12 +55,12 @@ class rm2Test extends AnyFunSuite {
       new File(combinedPath.toString).createNewFile()
     }
     //Run actual test
-    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString, "--force"))))
+    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString, "--force", "-c", "-p"))))
   }
 
   test("canDeleteForcefullyWithFakeFiles") {
     //Run actual test
-    assert(Delete.handle(new Config(Array("blabla", "--force"))))
+    assert(Delete.handle(new Config(Array("blabla", "--force", "-c", "-p"))))
   }
 
   test("canDeleteRecursively") {
@@ -80,13 +80,13 @@ class rm2Test extends AnyFunSuite {
       }
     }
     //Run actual test
-    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString, "-r"))))
+    assert(Delete.handle(new Config(Array(tmp.toRealPath().toString, "-r", "-c", "-p"))))
   }
 
   test("canDeleteRecursivelyWithFakeDir") {
     //catch exception
     val e = intercept[RuntimeException] {
-      Delete.handle(new Config(Array(Paths.get("foo", "bar").toString)))
+      Delete.handle(new Config(Array(Paths.get("foo", "bar").toString, "-c", "-p")))
     }
 
     assert(e.getMessage.contains("does not exist"))
@@ -111,7 +111,7 @@ class rm2Test extends AnyFunSuite {
     val out = new ByteArrayOutputStream()
     Console.withIn(in) {
       Console.withOut(out) {
-        val config = new Config(Array("-p", file.getAbsolutePath))
+        val config = new Config(Array(file.getAbsolutePath, "-c"))
         // add assertions to verify that the prompt was displayed and the file was deleted
         Delete.handle(config)
       }
@@ -126,13 +126,47 @@ class rm2Test extends AnyFunSuite {
     val out = new ByteArrayOutputStream()
     Console.withIn(in) {
       Console.withOut(out) {
-        val config = new Config(Array("-p", file.getAbsolutePath))
+        val config = new Config(Array(file.getAbsolutePath, "-c"))
         // add assertions to verify that the prompt was displayed and the file was deleted
         Delete.handle(config)
       }
     }
+    println(out.toString)
     //clean up and return
     file.deleteOnExit()
     assert(file.exists)
+  }
+
+  test("canConfirmMachine") {
+    //create temp file
+    val file = Files.createTempFile("foo", ".bar").toFile
+    val input = "y\n"
+    val in = new ByteArrayInputStream(input.getBytes())
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        val config = new Config(Array(file.getAbsolutePath, "-p"))
+        //clean up and return
+        file.deleteOnExit()
+        assert(Delete.handle(config))
+      }
+    }
+  }
+  test("canDenyMachine") {
+    //create temp file
+    val file = Files.createTempFile("foo", ".bar").toFile
+    val input = "n\n"
+    val in = new ByteArrayInputStream(input.getBytes())
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        val config = new Config(Array(file.getAbsolutePath, "-p"))
+        Delete.handle(config)
+      }
+    }
+    println(out)
+    //clean up and return
+    file.deleteOnExit()
+    assert(file.exists())
   }
 }

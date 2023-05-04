@@ -1,6 +1,7 @@
 package eu.alpacaislands.rm2
 
 import java.io.File
+import java.net.InetAddress
 import scala.io.StdIn.readLine
 
 
@@ -16,7 +17,9 @@ object Delete {
       print(helpString)
       return true
     }
-
+    if (c.shouldCheckMachine) {
+      if (!isRightMachine()) return false
+    }
     val results = delete(c)
     val failed = results.filter(_._2 == false).keys.toArray
 
@@ -26,6 +29,23 @@ object Delete {
       true
     } else {
       false
+    }
+
+
+
+  }
+
+  private def isRightMachine(): Boolean = {
+    val ip: String = InetAddress.getLocalHost.getHostName
+    val confirm = readLine(s"Are you sure you want to run the command on $ip? (y/n): ")
+
+    if (confirm == "y") {
+      true
+    } else if (confirm == "n") {
+      false
+    } else {
+      println("Invalid input: " + confirm)
+      isRightMachine()
     }
   }
 
