@@ -1,6 +1,7 @@
 package eu.alpacaislands.rm2
 
 import java.io.File
+import scala.io.StdIn.readLine
 
 
 object Delete {
@@ -8,17 +9,16 @@ object Delete {
   /**
    * The string that is printed when user uses --help or -h argument.
    * */
-  private val helpString = "placeholder"
+  private val helpString = "###########\n    RM2\n###########\nUsuage:\n example: \"rm2 foo.bar --force\"\n\nArguments:\n--force | -f\n  Forcefully deletes given path(s) ignoring everything.\n--recursive | -r\n  Deletes given path(s) recursively.\n--help | -h\n  Displays this message.\n--dry | -d\n  Runs the command without actually removing\n--prompt | -p\n  Asks the user for confirmation before deleting.\n"
 
   def handle(c: Config): Boolean = {
     if (c.isHelp) {
-      println(helpString)
-      true
+      print(helpString)
+      return true
     }
 
     val results = delete(c)
     val failed = results.filter(_._2 == false).keys.toArray
-
 
     if (results.values.forall(_ == true)) {
       true
@@ -41,10 +41,10 @@ object Delete {
         results += (path -> deleteForcefully(file, c.isDry))
       }
       else if (c.isRecursive) {
-        results += (path -> deleteRecursively(file, c.isDry))
+        results += (path -> deleteRecursively(file, c.isDry, c.shouldPrompt))
       }
       else {
-        results += (path -> deleteNormally(file, c.isDry))
+        results += (path -> deleteNormally(file, c.isDry, c.shouldPrompt))
       }
     }
     }
@@ -60,16 +60,28 @@ object Delete {
    * @return true if and only if the file or directory is
    *         successfully deleted; false otherwise. Returns true when dry is true
    */
-  private def deleteNormally(f: File, dry: Boolean): Boolean = {
+  private def deleteNormally(f: File, dry: Boolean, shouldPrompt: Boolean): Boolean = {
     if (!dry) {
       if (!f.exists()) throw new RuntimeException("Path: " + f.getAbsolutePath + " does not exist")
 
       if (f.isDirectory) throw new RuntimeException("Path: " + f.getAbsolutePath + "is a directory")
     }
-    f.deleteWithDry(dry)
+    if (shouldPrompt) {
+      val confirm = readLine(s"Are you sure you want to delete ${f.getAbsolutePath}? (y/n): ")
+
+      if (confirm.toLowerCase == "y") {
+        f.deleteWithDry(dry)
+      } else {
+        println("Skipping")
+        false
+      }
+    } else {
+      println(s"Deleting ${f.getAbsolutePath}")
+      f.deleteWithDry(dry)
+    }
   }
 
-  private def deleteRecursively(f: File, dry: Boolean): Boolean = {
+  private def deleteRecursively(f: File, dry: Boolean, shouldPrompt: Boolean): Boolean = {
     if (!dry) {
       if (!f.exists) {
         throw new RuntimeException(s"Path: ${f.getAbsolutePath} does not exist!")
@@ -77,15 +89,26 @@ object Delete {
     }
 
     if (f.isDirectory) {
-      f.listFiles.foreach(deleteRecursively(_, dry))
+      f.listFiles.foreach(deleteRecursively(_, dry, shouldPrompt))
     }
 
-    f.deleteWithDry(dry)
+    if (shouldPrompt) {
+      val confirm = readLine(s"Are you sure you want to delete ${f.getAbsolutePath}? (y/n): ")
+
+      if (confirm.toLowerCase == "y") {
+        f.deleteWithDry(dry)
+      } else {
+        false
+      }
+    } else {
+      f.deleteWithDry(dry)
+    }
+
+
   }
 
   private def deleteForcefully(f: File, dry: Boolean): Boolean = {
     // Force delete is actually just deleting recursively
-    //TODO deleteForcefully should ignore nonexistent files/directories
 
     if (!f.exists()) return true
 

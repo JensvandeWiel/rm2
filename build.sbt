@@ -11,3 +11,5 @@ lazy val root = (project in file("."))
 mainClass := Some("eu.alpacaislands.rm2.Main")
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.11" % Test
+libraryDependencies += "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % Test
+libraryDependencies += "org.mockito" % "mockito-core" % "3.12.4" % Test

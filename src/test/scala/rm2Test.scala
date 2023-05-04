@@ -1,9 +1,16 @@
 package eu.alpacaislands.rm2
 
 import org.scalatest.funsuite.AnyFunSuite
-import java.io.{ByteArrayOutputStream, File, PrintStream}
-import java.nio.file.{Files, Paths}
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, PrintStream, Console => JavaConsole}
+import java.nio.file.{Files, Paths}
+import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.Mockito._
+
+import scala.Console
+import scala.io.StdIn.readLine
+import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.Mockito._
 
 class rm2Test extends AnyFunSuite {
   test("canDeleteNormalFile") {
@@ -91,7 +98,41 @@ class rm2Test extends AnyFunSuite {
     Console.withOut(new PrintStream(baos)) {
       Delete.handle(new Config(Array("--help")))
     }
-    val output = baos.toString.trim
-    assert(output == "placeholder")
+
+    val output = baos.toString
+    assert(output == "###########\n    RM2\n###########\nUsuage:\n example: \"rm2 foo.bar --force\"\n\nArguments:\n--force | -f\n  Forcefully deletes given path(s) ignoring everything.\n--recursive | -r\n  Deletes given path(s) recursively.\n--help | -h\n  Displays this message.\n--dry | -d\n  Runs the command without actually removing\n--prompt | -p\n  Asks the user for confirmation before deleting.\n")
+  }
+
+  test("canPromptYesOnDeletion") {
+    //create temp file
+    val file = Files.createTempFile("foo", ".bar").toFile
+    val input = "y\n"
+    val in = new ByteArrayInputStream(input.getBytes())
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        val config = new Config(Array("-p", file.getAbsolutePath))
+        // add assertions to verify that the prompt was displayed and the file was deleted
+        Delete.handle(config)
+      }
+    }
+    !file.exists()
+  }
+  test("canPromptNoOnDeletion") {
+    //create temp file
+    val file = Files.createTempFile("foo", ".bar").toFile
+    val input = "n\n"
+    val in = new ByteArrayInputStream(input.getBytes())
+    val out = new ByteArrayOutputStream()
+    Console.withIn(in) {
+      Console.withOut(out) {
+        val config = new Config(Array("-p", file.getAbsolutePath))
+        // add assertions to verify that the prompt was displayed and the file was deleted
+        Delete.handle(config)
+      }
+    }
+    //clean up and return
+    file.deleteOnExit()
+    assert(file.exists)
   }
 }

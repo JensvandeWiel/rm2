@@ -29,7 +29,6 @@ class Config(args: Array[String]) {
   /**
    * Describes if user prompted fot the help command
    * */
-  //TODO Add help functionality
   val isHelp: Boolean = arguments.contains("help") || arguments.contains("h")
 
   /**
@@ -44,8 +43,11 @@ class Config(args: Array[String]) {
     if (isForce) {
       false
     }
-    !arguments.contains("prompt") || !arguments.contains("p")
+    arguments.contains("prompt") || arguments.contains("p")
   }
+
+
+  //Todo make app verbose and add option to run quiet
 
   /**
    *
