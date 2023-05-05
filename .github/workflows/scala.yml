@@ -6,10 +6,12 @@
 name: Testing
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "*" ]
+    branches:
+      - '*'
+  push:
+    branches:
+      - master
 
 permissions:
   contents: write
