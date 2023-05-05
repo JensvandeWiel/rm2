@@ -1,5 +1,9 @@
 package eu.alpacaislands.rm2
 
+import java.nio.file.{Path, Paths}
+import scala.io.Source
+import scala.xml.{Elem, XML}
+
 
 /**
  * Handles the config of the deletion, It parses the arguments passed to the application and it has boolean values if certain arguments are present
@@ -15,6 +19,17 @@ class Config(args: Array[String]) {
    * Contains all paths that are to be deleted.
    */
   val paths: Array[String] = parseArgs(args)._1
+
+  /**
+   * Contains all the paths that need to be extra warned
+   */
+  val warnPaths: Array[Path] = getWarnedDirectories
+
+  /**
+   * Describes if it should warn for warned directories.
+   * */
+  val shouldWarn: Boolean = !(arguments.contains("warn") || arguments.contains("w"))
+
 
   /**
    * Describes if user wants to force deletion
@@ -48,11 +63,12 @@ class Config(args: Array[String]) {
 
   /**
    * Describes if should not check for right machine
-   * */
+   */
   val shouldCheckMachine: Boolean = !arguments.contains("c")
 
 
   //Todo make app verbose and add option to run quiet
+  val isVerbose: Boolean = (!arguments.contains("verbose") || arguments.contains("v"))
 
   /**
    *
@@ -79,5 +95,15 @@ class Config(args: Array[String]) {
       }
       (files, arguments)
     }
+  }
+
+  private def getWarnedDirectories: Array[Path] = {
+    val warnFile = Source.fromResource("warn.xml").mkString
+    val warnXML: Elem = XML.loadString(warnFile)
+    (warnXML \\ "directory").map(dir => Paths.get(dir.text)).toArray
+  }
+
+  def checkPath(p: Path): Boolean = {
+    warnPaths.exists(warnPath => warnPath.compareTo(p) > 0)
   }
 }
