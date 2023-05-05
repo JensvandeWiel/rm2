@@ -2,7 +2,10 @@ package eu.alpacaislands.rm2
 
 import java.io.File
 import java.net.InetAddress
+import java.nio.file.Path
+import scala.io.Source
 import scala.io.StdIn.readLine
+import scala.xml.{Elem, XML}
 
 
 object Delete {
@@ -10,9 +13,12 @@ object Delete {
   /**
    * The string that is printed when user uses --help or -h argument.
    * */
-  private val helpString = "###########\n    RM2\n###########\nUsuage:\n example: \"rm2 foo.bar --force\"\n\nArguments:\n--force | -f\n  Forcefully deletes given path(s) ignoring everything.\n--recursive | -r\n  Deletes given path(s) recursively.\n--help | -h\n  Displays this message.\n--dry | -d\n  Runs the command without actually removing\n--prompt | -p\n  Asks the user for confirmation before deleting.\n"
+  private val helpString = "###########\n    RM2\n###########\nUsuage:\n example: \"rm2 foo.bar --force\"\n\nArguments:\n--force | -f\n  Forcefully deletes given path(s) ignoring everything.\n--recursive | -r\n  Deletes given path(s) recursively.\n--help | -h\n  Displays this message.\n--dry | -d\n  Runs the command without actually removing\n--prompt | -p\n  Asks the user for confirmation before deleting. If force is enabled this \n  option is false by default.\n-c\n  Describes if should not check for right machine, if used it skips.\n--verbose | -v\n  If specified rm2 will run quiet.\n--warn | -w\n  If specified rm2 will not ask for confirmation on warned paths.\n"
 
   def handle(c: Config): Boolean = {
+
+
+
     if (c.isHelp) {
       print(helpString)
       return true
@@ -30,9 +36,6 @@ object Delete {
     } else {
       false
     }
-
-
-
   }
 
   private def isRightMachine(): Boolean = {
@@ -56,16 +59,37 @@ object Delete {
 
 
       val file = new File(path)
+      if (c.checkPath(file.toPath) && c.shouldWarn) {
+        val confirm = readLine(s"Are you sure you want to delete ${file.getAbsolutePath}, because this path is marked as important. (y/n): ")
 
-      if (c.isForce) {
-        results += (path -> deleteForcefully(file, c.isDry))
+        if (confirm.toLowerCase == "y") {
+          if (c.isForce) {
+            results += (path -> deleteForcefully(file, c.isDry))
+          }
+          else if (c.isRecursive) {
+            results += (path -> deleteRecursively(file, c.isDry, c.shouldPrompt))
+          }
+          else {
+            results += (path -> deleteNormally(file, c.isDry, c.shouldPrompt))
+          }
+        } else {
+          println("Skipping")
+          false
+        }
+      } else {
+        if (c.isForce) {
+          results += (path -> deleteForcefully(file, c.isDry))
+        }
+        else if (c.isRecursive) {
+          results += (path -> deleteRecursively(file, c.isDry, c.shouldPrompt))
+        }
+        else {
+          results += (path -> deleteNormally(file, c.isDry, c.shouldPrompt))
+        }
       }
-      else if (c.isRecursive) {
-        results += (path -> deleteRecursively(file, c.isDry, c.shouldPrompt))
-      }
-      else {
-        results += (path -> deleteNormally(file, c.isDry, c.shouldPrompt))
-      }
+
+
+
     }
     }
 
