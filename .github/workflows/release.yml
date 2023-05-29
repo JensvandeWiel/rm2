@@ -36,8 +36,10 @@ jobs:
           distribution: 'corretto'
           cache: 'sbt'
 
-      - name: Override project version
-        run: sed -i 's#version := ".*"#version := "'"${{ github.ref/refs\/tags\// }}"'"#' build.sbt
+      - name: Set project version
+        run: sed -i "s/version := \".*\"/version := \"${{ env.VERSION }}\"/" build.sbt
+        env:
+          VERSION: ${{ github.ref.replace('refs/tags/', '') }}
 
 
       - name: Run sbt
