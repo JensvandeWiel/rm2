@@ -37,7 +37,7 @@ jobs:
           cache: 'sbt'
 
       - name: Override project version
-        run: sed -i 's/version := ".*"/version := "${{ github.ref }}"/' build.sbt
+        run: sed -i 's#version := ".*"#version := "${{ github.ref }}"#' build.sbt
 
       - name: Run sbt
         run: sbt compile
