@@ -37,17 +37,13 @@ jobs:
           cache: 'sbt'
 
       - name: Set project version
-        run: sed -i "s/version := \".*\"/version := \"${{ env.VERSION }}\"/" build.sbt
-        env:
-          VERSION: ${{ github.ref.replace('refs/tags/', '') }}
-
+        run: sed -i "s/version := \".*\"/version := \"${{ github.event.release.tag_name }}\"/" build.sbt
 
       - name: Run sbt
         run: sbt compile
 
       - name: Package JAR
-        run: sbt 'set packageOptions += Package.ManifestAttributes(
-          "Implementation-Version" -> "${{ github.ref }}")' package
+        run: sbt package
 
       - name: Rename JAR file
         run: mv target/scala-2.13/*.jar target/scala-2.13/app.jar
@@ -56,4 +52,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./target/scala-2.13/app.jar
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.event.release.tag_name }}
