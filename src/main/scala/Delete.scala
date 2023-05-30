@@ -59,8 +59,8 @@ object Delete {
 
 
       val file = new File(path)
-      if (c.checkPath(file.toPath) && c.shouldWarn) {
-        val confirm = readLine(s"Are you sure you want to delete ${file.getAbsolutePath}, because this path is marked as important. (y/n): ")
+      if (c.shouldWarn && c.checkPath(file.toPath)) {
+        val confirm = readLine(s"Are you sure you want to delete ${file.toPath.toRealPath()}, because this path is marked as important. (y/n): ")
 
         if (confirm.toLowerCase == "y") {
           if (c.isForce) {
