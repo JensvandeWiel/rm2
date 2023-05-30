@@ -105,7 +105,8 @@ class Config(args: Array[String]) {
 
   def checkPath(p: Path): Boolean = {
 
-    warnPaths.exists(warnPath => warnPath.toRealPath().compareTo(p.toRealPath()) <= 0)
+    warnPaths.exists(warnPath => {
+      (p.toRealPath().toString.contains(warnPath.toString))})
 
   }
 }
