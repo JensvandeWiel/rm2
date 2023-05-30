@@ -54,12 +54,12 @@ jobs:
         run: sbt Universal/packageBin
 
       - name: Rename Universal zip file
-        run: mv target/universal/*.zip target/universal/RM2_${{ github.ref:10 }}.zip
+        run: mv target/universal/*.zip target/universal/RM2.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ./target/scala-2.13/app.jar
-            ./target/universal/RM2_${{ github.ref:10 }}.zip
-          tag_name: ${{ github.ref:10 }}
+            ./target/universal/RM2.zip
+          tag_name: ${{ github.event.release.tag_name }}
